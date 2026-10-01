@@ -26,8 +26,7 @@ public class Boule : MonoBehaviour
     private PlayerInput controles;
 
     private float boostMax = 3;
-
-    private float boostActuelle;
+    private float boostActuelle = 0;
 
     private float forceActuelle = 15f;
 
@@ -95,6 +94,10 @@ public class Boule : MonoBehaviour
             rigidbody.AddForce(forceAppliquee, ForceMode.Force);
         }
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="contexte"></param>
     private void CommencerJeu(InputAction.CallbackContext contexte)
     {
         rigidbody.useGravity = true;
@@ -104,6 +107,10 @@ public class Boule : MonoBehaviour
         controles.actions.FindAction("Boost").canceled += Boost;
         controles.actions.FindAction("Commencer").canceled -= CommencerJeu;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="contexte"></param>
     private void Boost(InputAction.CallbackContext contexte)
     {
         if(boostActuelle == 0) return;
