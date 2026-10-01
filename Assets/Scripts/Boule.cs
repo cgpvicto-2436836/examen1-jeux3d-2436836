@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+//using static Unity.Cinemachine.InputAxisControllerBase<T>;
 
 /// <summary>
 /// Objet représentant une boule contrôlée par le joueur.
@@ -8,6 +9,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class Boule : MonoBehaviour
 {
+
     [SerializeField, Tooltip("La cible pour le suvi de la caméra")]
     private Transform cibleCamera;
 
@@ -20,6 +22,16 @@ public class Boule : MonoBehaviour
     // Référence au Rigidbody de la boule pour appliquer la physique.
     private Rigidbody rigidbody;
 
+    [SerializeField, Tooltip("Le PlayerInput qui gère les actions de la personne qui joue")]
+    private PlayerInput controles;
+
+    private float boostMax = 3;
+
+    private float boostActuelle;
+
+    private float forceActuelle = 15f;
+
+
     /// <summary>
     /// Obtient la vélocité actuelle de la boule.
     /// </summary>
@@ -28,6 +40,11 @@ public class Boule : MonoBehaviour
     private void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
+        boostActuelle = 1;
+        PlayerInput controles = ControleurJeu.Instance.Controles;
+        controles.actions.FindAction("Diriger").performed -= CommencerDirection;
+        controles.actions.FindAction("Commencer").canceled += CommencerJeu;
+
     }
 
     private void OnDestroy()
@@ -42,6 +59,10 @@ public class Boule : MonoBehaviour
 
         controles.actions.FindAction("Diriger").performed -= CommencerDirection;
         controles.actions.FindAction("Diriger").canceled -= ArreterDirection;
+        controles.actions.FindAction("Boost").canceled -= Boost;
+        controles.actions.FindAction("Commencer").canceled -= CommencerJeu;
+
+
     }
 
     private void Update()
@@ -73,5 +94,24 @@ public class Boule : MonoBehaviour
         {
             rigidbody.AddForce(forceAppliquee, ForceMode.Force);
         }
+    }
+    private void CommencerJeu(InputAction.CallbackContext contexte)
+    {
+        rigidbody.useGravity = true;
+        PlayerInput controles = ControleurJeu.Instance.Controles;
+        controles.actions.FindAction("Diriger").canceled += CommencerDirection;
+        controles.actions.FindAction("Diriger").canceled += ArreterDirection;
+        controles.actions.FindAction("Boost").canceled += Boost;
+        controles.actions.FindAction("Commencer").canceled -= CommencerJeu;
+    }
+    private void Boost(InputAction.CallbackContext contexte)
+    {
+        if(boostActuelle == 0) return;
+
+        boostActuelle -= 1;
+
+        rigidbody.WakeUp();
+        rigidbody.AddForce(transform.forward * forceActuelle, ForceMode.Impulse);
+
     }
 }
